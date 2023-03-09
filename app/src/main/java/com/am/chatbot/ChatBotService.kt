@@ -20,13 +20,11 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import java.util.*
 
 class ChatBotService: Service() {
-    private var messageCount: Int = 0
     override fun onBind(p0: Intent?): IBinder? {
         return null
     }
 
     override fun onCreate() {
-        Log.e("909090", "onCreate: ")
         super.onCreate()
     }
 
@@ -52,7 +50,7 @@ class ChatBotService: Service() {
         builder.setAutoCancel(true)
         builder.priority = NotificationCompat.PRIORITY_HIGH
         builder.setDefaults(NotificationCompat.DEFAULT_ALL)
-        builder.setCategory(NotificationCompat.CATEGORY_ALARM)
+        builder.setCategory(NotificationCompat.CATEGORY_MESSAGE)
         builder.setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
 
         builder.setContentTitle("Chat Bot")
@@ -62,8 +60,8 @@ class ChatBotService: Service() {
         val notification: Notification = builder.build()
         val notificationManager: NotificationManager = getSystemService(
             Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancelAll()
-        notificationManager.notify(1, notification)
+        // notificationManager.cancelAll()
+        notificationManager.notify(Random().nextInt(), notification)
     }
 
     private fun createNotificationChannel() {
@@ -103,26 +101,28 @@ class ChatBotService: Service() {
 
                 onShowNotification("ChatBot Stopped: 57")
             } else {
-                val message = when (messageCount) {
-                    0 -> {
-                        messageCount = 1
-                        "Hello Amrik!"
-                    }
-                    1 -> {
-                        messageCount = 2
-                        "How are you?"
-                    }
-                    else -> {
-                        messageCount = 0
-                        "Good Bye Amrik!"
-                    }
-                }
                 val resultIntent = Intent()
                 resultIntent.action = "com.am.chatbot.notification"
-                resultIntent.putExtra("callFor", message)
+                resultIntent.putExtra("callFor", "Hello ${intent.getStringExtra("name")}!")
                 LocalBroadcastManager.getInstance(context).sendBroadcast(resultIntent)
 
-                onShowNotification(message)
+                onShowNotification("Hello ${intent.getStringExtra("name")}!")
+
+                Thread.sleep(100)
+                val resultIntent1 = Intent()
+                resultIntent1.action = "com.am.chatbot.notification"
+                resultIntent1.putExtra("callFor", "How are you?")
+                LocalBroadcastManager.getInstance(context).sendBroadcast(resultIntent1)
+
+                onShowNotification("How are you?")
+
+                Thread.sleep(100)
+                val resultIntent2 = Intent()
+                resultIntent2.action = "com.am.chatbot.notification"
+                resultIntent2.putExtra("callFor", "Good Bye ${intent.getStringExtra("name")}!")
+                LocalBroadcastManager.getInstance(context).sendBroadcast(resultIntent2)
+
+                onShowNotification("Good Bye ${intent.getStringExtra("name")}!")
             }
         }
     }

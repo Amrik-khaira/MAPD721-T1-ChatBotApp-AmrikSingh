@@ -6,8 +6,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
+import android.widget.EdgeEffect
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -21,6 +25,7 @@ class MainActivity: AppCompatActivity() {
     private lateinit var adapter: ChatAdapter
     private lateinit var rvData: RecyclerView
     private lateinit var tvGenerate: TextView
+    private lateinit var etName: EditText
     private lateinit var tvStop: TextView
     private val studentId: String = "301296257"
     private val dataList: ArrayList<ChatModel> = ArrayList()
@@ -37,15 +42,25 @@ class MainActivity: AppCompatActivity() {
         rvData = findViewById(R.id.rv_data)
         tvGenerate = findViewById(R.id.tv_generate)
         tvStop = findViewById(R.id.tv_stop)
+        etName = findViewById(R.id.tv_message)
 
         tvGenerate.setOnClickListener {
             if(isServiceStop){
                 startService(Intent(this, ChatBotService::class.java))
                 isServiceStop = false
+                //To send message after service start
+                Handler(Looper.getMainLooper()).postDelayed({
+                    tvGenerate.performClick()
+                }, 100)
             }
             val intent = Intent()
             intent.action = "com.am.chatbot.chatBotnotification"
             intent.putExtra("callFor", "generate")
+            if(etName.text.toString().trim().isEmpty()) {
+                intent.putExtra("name", "Amrik")
+            }else{
+                intent.putExtra("name", etName.text.toString().trim())
+            }
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
         }
 
@@ -94,5 +109,8 @@ class MainActivity: AppCompatActivity() {
         dataList.add(ChatModel(message, false, System.currentTimeMillis()))
         adapter.submitList(dataList)
         adapter.notifyDataSetChanged()
+        Handler(Looper.getMainLooper()).postDelayed({
+          rvData.smoothScrollToPosition(dataList.size)
+        }, 100)
     }
 }
